@@ -1,20 +1,23 @@
 import { Injectable } from '@nestjs/common';
+import { UsersRepository } from './users.repository';
 
 @Injectable()
 export class UsersService {
-  constructor() {}
+  constructor(private readonly usersRepository: UsersRepository) {}
 
   findAll() {
-    throw new Error('Method not implemented.');
+    return this.usersRepository.findAll();
   }
 
-  findOne(id: string) {
-    throw new Error('Method not implemented.');
+  findOne(id: number) {
+    return this.usersRepository.findOne(id);
   }
 
   create(user: any) {
-    throw new Error('Method not implemented.');
+    return this.usersRepository.create(user);
   }
 
-  remove(id: string) {}
+  remove(id: number) {
+    return this.usersRepository.remove(id);
+  }
 }
