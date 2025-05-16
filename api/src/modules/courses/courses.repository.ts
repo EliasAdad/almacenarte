@@ -1,10 +1,13 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { Course } from './entities/course.entity';
+import { CreateCourseDto } from './dto/create-course.dto';
+import { UpdateCourseDto } from './dto/update-course.dto';
 
 @Injectable()
 export class CoursesRepository {
   constructor() {}
 
-  private courses = [
+  private courses: Course[] = [
     {
       id: 1,
       name: 'Introducción a JavaScript',
@@ -52,4 +55,57 @@ export class CoursesRepository {
       cupos: 10,
     },
   ];
+
+  async findAll() {
+    const courses = this.courses;
+
+    if (!courses || courses.length === 0)
+      throw new NotFoundException('No se encontraron usuarios registrados.');
+
+    return courses;
+  }
+
+  async findOne(id: number) {
+    const course = this.courses.find((course) => course.id === id);
+
+    if (!course) throw new NotFoundException('ID inválido o usuario no existe');
+
+    return course;
+  }
+
+  async create(course: CreateCourseDto) {
+    const id = this.courses.length + 1;
+    const newCourse = { id, ...course };
+
+    this.courses = [...this.courses, newCourse];
+
+    return { message: 'Curso creado correctamente!', newCourse };
+  }
+
+  async update(courseId: number, data: UpdateCourseDto) {
+    const courseIndex = this.courses.findIndex(
+      (course) => courseId === course.id,
+    );
+
+    if (courseIndex === -1)
+      throw new NotFoundException('ID inválido o curso no existe');
+
+    this.courses[courseIndex] = { ...this.courses[courseIndex], ...data };
+
+    return {
+      message: 'Curso actualizado exitosamente!',
+      updated: this.courses[courseIndex],
+    };
+  }
+
+  async remove(id: number) {
+    const index = this.courses.findIndex((course) => course.id === id);
+
+    if (index === -1)
+      throw new NotFoundException('ID inválido o el curso no existe');
+
+    const [deleted] = this.courses.splice(index, 1);
+
+    return { message: 'Curso eliminado', deleted };
+  }
 }
