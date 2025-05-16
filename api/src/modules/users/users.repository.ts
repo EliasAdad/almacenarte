@@ -1,10 +1,13 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
+import { CreateUserDto } from './dto/create-user.dto';
+import { User } from './entities/user.entity';
+import { UpdateUserDto } from './dto/update-user.dto';
 
 @Injectable()
 export class UsersRepository {
   constructor() {}
 
-  private users = [
+  private users: User[] = [
     {
       id: 1,
       email: 'john.doe@example.com',
@@ -74,7 +77,7 @@ export class UsersRepository {
     return rest;
   }
 
-  async create(user: any) {
+  async create(user: CreateUserDto) {
     const id = this.users.length + 1;
     const newUser = { id, ...user };
 
@@ -85,6 +88,21 @@ export class UsersRepository {
     return rest;
   }
 
+  async update(userId: number, data: UpdateUserDto) {
+    const userIndex = this.users.findIndex((user) => userId === user.id);
+
+    if (userIndex === -1)
+      throw new NotFoundException('ID inválido o usuario no existe');
+
+    this.users[userIndex] = { ...this.users[userIndex], ...data };
+
+    const { password: _, ...rest } = this.users[userIndex];
+    return {
+      message: 'Usuario actualizado exitosamente!',
+      user: rest,
+    };
+  }
+
   async remove(id: number) {
     const index = this.users.findIndex((user) => user.id === id);
 
@@ -93,6 +111,6 @@ export class UsersRepository {
 
     const [deleted] = this.users.splice(index, 1);
 
-    return { message: 'User removed', deleted };
+    return { message: 'Usuario eliminado', deleted };
   }
 }
