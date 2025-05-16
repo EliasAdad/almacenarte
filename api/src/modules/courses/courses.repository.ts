@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { HttpStatus, Injectable, NotFoundException } from '@nestjs/common';
 import { Course } from './entities/course.entity';
 import { CreateCourseDto } from './dto/create-course.dto';
 import { UpdateCourseDto } from './dto/update-course.dto';
@@ -56,13 +56,19 @@ export class CoursesRepository {
     },
   ];
 
-  async findAll() {
+  async findAll(page: number = 1, limit: number = 5) {
     const courses = this.courses;
 
     if (!courses || courses.length === 0)
       throw new NotFoundException('No se encontraron usuarios registrados.');
 
-    return courses;
+    const isAvailable = courses.filter((course) => course.cupos > 0);
+
+    const startIndex = (page - 1) * limit;
+    const endIndex = startIndex + limit;
+    const paginated = isAvailable.slice(startIndex, endIndex);
+
+    return { status: HttpStatus.OK, paginated };
   }
 
   async findOne(id: number) {
@@ -70,7 +76,7 @@ export class CoursesRepository {
 
     if (!course) throw new NotFoundException('ID inválido o usuario no existe');
 
-    return course;
+    return { status: HttpStatus.OK, course };
   }
 
   async create(course: CreateCourseDto) {
@@ -79,7 +85,11 @@ export class CoursesRepository {
 
     this.courses = [...this.courses, newCourse];
 
-    return { message: 'Curso creado correctamente!', newCourse };
+    return {
+      status: HttpStatus.CREATED,
+      message: 'Curso creado correctamente!',
+      newCourse,
+    };
   }
 
   async update(courseId: number, data: UpdateCourseDto) {
@@ -93,6 +103,7 @@ export class CoursesRepository {
     this.courses[courseIndex] = { ...this.courses[courseIndex], ...data };
 
     return {
+      status: HttpStatus.OK,
       message: 'Curso actualizado exitosamente!',
       updated: this.courses[courseIndex],
     };
@@ -106,6 +117,6 @@ export class CoursesRepository {
 
     const [deleted] = this.courses.splice(index, 1);
 
-    return { message: 'Curso eliminado', deleted };
+    return { status: HttpStatus.OK, message: 'Curso eliminado', deleted };
   }
 }

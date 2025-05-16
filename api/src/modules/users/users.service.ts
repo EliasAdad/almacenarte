@@ -7,8 +7,8 @@ import { CreateUserDto } from './dto/create-user.dto';
 export class UsersService {
   constructor(private readonly usersRepository: UsersRepository) {}
 
-  findAll() {
-    return this.usersRepository.findAll();
+  findAll(page: number, limit: number) {
+    return this.usersRepository.findAll(page, limit);
   }
 
   findOne(id: number) {

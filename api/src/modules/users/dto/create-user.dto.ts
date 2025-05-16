@@ -6,4 +6,5 @@ export class CreateUserDto {
   phone: string;
   country?: string;
   city?: string;
+  isActive: boolean = false;
 }

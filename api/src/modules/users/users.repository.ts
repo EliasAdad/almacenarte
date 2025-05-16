@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { HttpStatus, Injectable, NotFoundException } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { User } from './entities/user.entity';
 import { UpdateUserDto } from './dto/update-user.dto';
@@ -17,6 +17,7 @@ export class UsersRepository {
       phone: '+1 555-1234',
       country: 'USA',
       city: 'New York',
+      isActive: true,
     },
     {
       id: 2,
@@ -27,6 +28,7 @@ export class UsersRepository {
       phone: '+44 20 7946 0958',
       country: 'UK',
       city: 'London',
+      isActive: true,
     },
     {
       id: 3,
@@ -37,6 +39,7 @@ export class UsersRepository {
       phone: '+54 11 2345 6789',
       country: 'Argentina',
       city: 'Buenos Aires',
+      isActive: true,
     },
     {
       id: 4,
@@ -47,6 +50,7 @@ export class UsersRepository {
       phone: '+86 10 1234 5678',
       country: 'China',
       city: 'Beijing',
+      isActive: false,
     },
     {
       id: 5,
@@ -55,16 +59,21 @@ export class UsersRepository {
       password: 'pass321',
       address: 'Calle Sol 123',
       phone: '+34 91 123 4567',
+      isActive: false,
     },
   ];
 
-  async findAll() {
+  async findAll(page: number = 1, limit: number = 5) {
     const users = this.users;
 
     if (!users || users.length === 0)
       throw new NotFoundException('No se encontraron usuarios registrados.');
 
-    return users.map(({ password: _, ...rest }) => rest);
+    const startIndex = (page - 1) * limit;
+    const endIndex = startIndex + limit;
+    const paginated = users.slice(startIndex, endIndex);
+
+    return paginated.map(({ password: _, ...rest }) => rest);
   }
 
   async findOne(id: number) {
@@ -74,18 +83,26 @@ export class UsersRepository {
 
     const { password: _, ...rest } = user;
 
-    return rest;
+    return {
+      status: HttpStatus.OK,
+      user: rest,
+    };
   }
 
   async create(user: CreateUserDto) {
     const id = this.users.length + 1;
     const newUser = { id, ...user };
+    newUser.isActive = true;
 
     this.users = [...this.users, newUser];
 
     const { password: _, ...rest } = newUser;
 
-    return rest;
+    return {
+      status: HttpStatus.CREATED,
+      message: 'Usuario creado exitosamente!',
+      user: rest,
+    };
   }
 
   async update(userId: number, data: UpdateUserDto) {
@@ -97,7 +114,9 @@ export class UsersRepository {
     this.users[userIndex] = { ...this.users[userIndex], ...data };
 
     const { password: _, ...rest } = this.users[userIndex];
+
     return {
+      status: HttpStatus.OK,
       message: 'Usuario actualizado exitosamente!',
       user: rest,
     };
@@ -111,6 +130,10 @@ export class UsersRepository {
 
     const [deleted] = this.users.splice(index, 1);
 
-    return { message: 'Usuario eliminado', deleted };
+    return {
+      status: HttpStatus.OK,
+      message: 'Usuario eliminado exitosamente!',
+      deleted,
+    };
   }
 }
