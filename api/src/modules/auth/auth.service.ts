@@ -1,26 +1,27 @@
-import { Injectable } from '@nestjs/common';
-import { CreateAuthDto } from './dto/create-auth.dto';
-import { UpdateAuthDto } from './dto/update-auth.dto';
+import { BadRequestException, HttpStatus, Injectable } from '@nestjs/common';
+import { UsersRepository } from '../users/users.repository';
 
 @Injectable()
 export class AuthService {
-  create(createAuthDto: CreateAuthDto) {
-    return 'This action adds a new auth';
-  }
+  constructor(private readonly usersRepository: UsersRepository) {}
 
-  findAll() {
-    return `This action returns all auth`;
-  }
+  async signIn(email: string, password: string) {
+    if (!email || !password) {
+      throw new BadRequestException('Email y contraseña son requeridos');
+    }
 
-  findOne(id: number) {
-    return `This action returns a #${id} auth`;
-  }
+    const user = await this.usersRepository.findByEmail(email);
 
-  update(id: number, updateAuthDto: UpdateAuthDto) {
-    return `This action updates a #${id} auth`;
-  }
+    if (!user || user.password !== password) {
+      throw new BadRequestException(
+        'Email o contraseña inválidos, intenta de nuevo.',
+      );
+    }
 
-  remove(id: number) {
-    return `This action removes a #${id} auth`;
+    return {
+      status: HttpStatus.OK,
+      message: `Logueado exitosamente`,
+      user,
+    };
   }
 }

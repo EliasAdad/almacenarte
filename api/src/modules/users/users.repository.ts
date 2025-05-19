@@ -89,6 +89,12 @@ export class UsersRepository {
     };
   }
 
+  async findByEmail(userEmail: string) {
+    const user = await this.users.find((user) => user.email === userEmail);
+
+    return user;
+  }
+
   async create(user: CreateUserDto) {
     const id = this.users.length + 1;
     const newUser = { id, ...user };
@@ -101,7 +107,7 @@ export class UsersRepository {
     return {
       status: HttpStatus.CREATED,
       message: 'Usuario creado exitosamente!',
-      user: rest,
+      rest,
     };
   }
 
