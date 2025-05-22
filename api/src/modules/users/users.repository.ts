@@ -1,13 +1,22 @@
-import { HttpStatus, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  HttpStatus,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { User } from './entities/user.entity';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 
 @Injectable()
 export class UsersRepository {
-  constructor() {}
+  constructor(
+    @InjectRepository(User) private usersRepository: Repository<User>,
+  ) {}
 
-  private users: User[] = [
+  private users = [
     {
       id: 1,
       email: 'john.doe@example.com',
@@ -64,7 +73,7 @@ export class UsersRepository {
   ];
 
   async findAll(page: number = 1, limit: number = 5) {
-    const users = this.users;
+    const users = await this.usersRepository.find();
 
     if (!users || users.length === 0)
       throw new NotFoundException('No se encontraron usuarios registrados.');
@@ -76,8 +85,8 @@ export class UsersRepository {
     return paginated.map(({ password: _, ...rest }) => rest);
   }
 
-  async findOne(id: number) {
-    const user = this.users.find((user) => user.id === id);
+  async findOne(id: string) {
+    const user = await this.usersRepository.findOne({ where: { id } });
 
     if (!user) throw new NotFoundException('ID inválido o usuario no existe');
 
@@ -90,17 +99,20 @@ export class UsersRepository {
   }
 
   async findByEmail(userEmail: string) {
-    const user = await this.users.find((user) => user.email === userEmail);
+    const user = await this.usersRepository.findOne({
+      where: { email: userEmail },
+    });
+
+    if (!user)
+      throw new NotFoundException(
+        'Email inválido o no registrado, intente de nuevo.',
+      );
 
     return user;
   }
 
   async create(user: CreateUserDto) {
-    const id = this.users.length + 1;
-    const newUser = { id, ...user };
-    newUser.isActive = true;
-
-    this.users = [...this.users, newUser];
+    const newUser = await this.usersRepository.save(user);
 
     const { password: _, ...rest } = newUser;
 
@@ -111,16 +123,20 @@ export class UsersRepository {
     };
   }
 
-  async update(userId: number, data: UpdateUserDto) {
-    const userIndex = this.users.findIndex((user) => userId === user.id);
+  async update(userId: string, data: UpdateUserDto) {
+    const found = await this.usersRepository.findOne({ where: { id: userId } });
 
-    if (userIndex === -1)
-      throw new NotFoundException('ID inválido o usuario no existe');
+    if (!found)
+      throw new BadRequestException(
+        'Id inválido o no existe, intenta de nuevo por favor.',
+      );
 
-    this.users[userIndex] = { ...this.users[userIndex], ...data };
+    await this.usersRepository.update(userId, data);
+    const updated = await this.usersRepository.findOne({
+      where: { id: userId },
+    });
 
-    const { password: _, ...rest } = this.users[userIndex];
-
+    const { password: _, ...rest } = updated;
     return {
       status: HttpStatus.OK,
       message: 'Usuario actualizado exitosamente!',
@@ -128,18 +144,18 @@ export class UsersRepository {
     };
   }
 
-  async remove(id: number) {
-    const index = this.users.findIndex((user) => user.id === id);
+  async remove(id: string) {
+    const found = await this.usersRepository.findOne({ where: { id } });
 
-    if (index === -1)
-      throw new NotFoundException('ID inválido o usuario no existe');
-
-    const [deleted] = this.users.splice(index, 1);
+    if (!found)
+      throw new BadRequestException(
+        'Id inválido o no existe, intenta de nuevo por favor.',
+      );
 
     return {
       status: HttpStatus.OK,
       message: 'Usuario eliminado exitosamente!',
-      deleted,
+      found,
     };
   }
 }

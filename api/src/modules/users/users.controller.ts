@@ -31,18 +31,18 @@ export class UsersController {
   @UseGuards(AuthGuard)
   @Get(':id')
   findOne(@Param('id') id: string) {
-    return this.usersService.findOne(+id);
+    return this.usersService.findOne(id);
   }
 
   @UseGuards(AuthGuard)
   @Put(':id')
   update(@Param('id') userId: string, @Body() data: CreateUserDto) {
-    return this.usersService.update(+userId, data);
+    return this.usersService.update(userId, data);
   }
 
   @UseGuards(AuthGuard)
   @Delete(':id')
   remove(@Param('id') id: string) {
-    return this.usersService.remove(+id);
+    return this.usersService.remove(id);
   }
 }
