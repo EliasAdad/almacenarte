@@ -6,21 +6,25 @@ export class Course {
   @PrimaryGeneratedColumn('uuid')
   id: string = uuid();
 
-  @Column()
+  @Column({ type: 'string', length: 50, nullable: false })
   name: string;
 
-  @Column()
+  @Column({ type: 'text', nullable: false })
   description: string;
 
-  @Column()
+  @Column({ type: 'decimal', precision: 10, scale: 2, nullable: false })
   price: number;
 
-  @Column()
+  @Column({ type: 'text' })
   duration: string;
 
-  @Column()
+  @Column({
+    type: 'string',
+    default:
+      'https://upload.wikimedia.org/wikipedia/commons/a/a3/Image-not-found.png',
+  })
   imgUrl?: string;
 
-  @Column()
+  @Column({ type: 'int' })
   cupos: number;
 }

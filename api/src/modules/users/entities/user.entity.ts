@@ -6,25 +6,25 @@ export class User {
   @PrimaryGeneratedColumn('uuid')
   id: string = uuid();
 
-  @Column()
+  @Column({ type: 'text', length: 50, nullable: false })
   name: string;
 
-  @Column()
+  @Column({ type: 'text', length: 50, nullable: false })
   email: string;
 
-  @Column()
+  @Column({ type: 'text', length: 20, nullable: false })
   password: string;
 
-  @Column()
+  @Column({ type: 'text' })
   address: string;
 
-  @Column()
-  phone: string;
+  @Column({ type: 'int' })
+  phone: number;
 
-  @Column()
+  @Column({ type: 'text', length: 50 })
   country?: string;
 
-  @Column()
+  @Column({ type: 'text', length: 50 })
   city?: string;
 
   @Column({ default: true })
