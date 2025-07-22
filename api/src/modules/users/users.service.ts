@@ -11,7 +11,7 @@ export class UsersService {
     return this.usersRepository.findAll(page, limit);
   }
 
-  findOne(id: number) {
+  findOne(id: string) {
     return this.usersRepository.findOne(id);
   }
 
@@ -19,11 +19,11 @@ export class UsersService {
     return this.usersRepository.create(user);
   }
 
-  update(userId: number, data: UpdateUserDto) {
+  update(userId: string, data: UpdateUserDto) {
     return this.usersRepository.update(userId, data);
   }
 
-  remove(id: number) {
+  remove(id: string) {
     return this.usersRepository.remove(id);
   }
 }

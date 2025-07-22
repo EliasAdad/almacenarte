@@ -1,13 +1,22 @@
-import { HttpStatus, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  HttpStatus,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { Course } from './entities/course.entity';
 import { CreateCourseDto } from './dto/create-course.dto';
 import { UpdateCourseDto } from './dto/update-course.dto';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 
 @Injectable()
 export class CoursesRepository {
-  constructor() {}
+  constructor(
+    @InjectRepository(Course) private coursesRepository: Repository<Course>,
+  ) {}
 
-  private courses: Course[] = [
+  private courses = [
     {
       id: 1,
       name: 'Introducción a JavaScript',
@@ -57,7 +66,7 @@ export class CoursesRepository {
   ];
 
   async findAll(page: number = 1, limit: number = 5) {
-    const courses = this.courses;
+    const courses = await this.coursesRepository.find();
 
     if (!courses || courses.length === 0)
       throw new NotFoundException('No se encontraron usuarios registrados.');
@@ -71,19 +80,18 @@ export class CoursesRepository {
     return { status: HttpStatus.OK, paginated };
   }
 
-  async findOne(id: number) {
-    const course = this.courses.find((course) => course.id === id);
+  async findOne(id: string) {
+    const course = await this.coursesRepository.findOne({ where: { id } });
 
-    if (!course) throw new NotFoundException('ID inválido o usuario no existe');
+    if (!course) {
+      throw new BadRequestException('ID inválido o usuario no existe');
+    }
 
     return { status: HttpStatus.OK, course };
   }
 
   async create(course: CreateCourseDto) {
-    const id = this.courses.length + 1;
-    const newCourse = { id, ...course };
-
-    this.courses = [...this.courses, newCourse];
+    const newCourse = await this.coursesRepository.save(course);
 
     return {
       status: HttpStatus.CREATED,
@@ -92,31 +100,39 @@ export class CoursesRepository {
     };
   }
 
-  async update(courseId: number, data: UpdateCourseDto) {
-    const courseIndex = this.courses.findIndex(
-      (course) => courseId === course.id,
-    );
+  async update(courseId: string, data: UpdateCourseDto) {
+    const found = await this.coursesRepository.findOne({
+      where: { id: courseId },
+    });
 
-    if (courseIndex === -1)
-      throw new NotFoundException('ID inválido o curso no existe');
+    if (!found)
+      throw new BadRequestException(
+        'ID inválido o no existe, intenta de nuevo por favor.',
+      );
 
-    this.courses[courseIndex] = { ...this.courses[courseIndex], ...data };
+    await this.coursesRepository.update(courseId, data);
+    const updated = await this.coursesRepository.findOne({
+      where: { id: courseId },
+    });
 
     return {
       status: HttpStatus.OK,
       message: 'Curso actualizado exitosamente!',
-      updated: this.courses[courseIndex],
+      updated: updated,
     };
   }
 
-  async remove(id: number) {
-    const index = this.courses.findIndex((course) => course.id === id);
+  async remove(id: string) {
+    const found = await this.coursesRepository.findOne({ where: { id } });
 
-    if (index === -1)
-      throw new NotFoundException('ID inválido o el curso no existe');
+    if (!found) {
+      throw new BadRequestException(
+        'ID inválido o no existe, intenta de nuevo por favor.',
+      );
+    }
 
-    const [deleted] = this.courses.splice(index, 1);
+    await this.coursesRepository.delete(found);
 
-    return { status: HttpStatus.OK, message: 'Curso eliminado', deleted };
+    return { status: HttpStatus.OK, message: 'Curso eliminado', found };
   }
 }
