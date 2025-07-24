@@ -32,6 +32,8 @@
     "@nestjs/mapped-types": "*",
     "@nestjs/platform-express": "^10.4.17",
     "@nestjs/typeorm": "^11.0.0",
+    "buffer-to-stream": "^1.0.0",
+    "cloudinary": "^2.7.0",
     "dotenv": "^16.5.0",
     "pg": "^8.16.0",
     "reflect-metadata": "^0.2.0",
