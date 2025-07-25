@@ -6,8 +6,10 @@ import * as toStream from 'buffer-to-stream';
 export class CloudinaryService {
   async uploadImage(file: Express.Multer.File): Promise<UploadApiResponse> {
     return new Promise((resolve, reject) => {
+      const isPdf = file.mimetype === 'application/pdf';
       const upload = v2.uploader.upload_stream(
-        { resource_type: 'auto' },
+        { resource_type: 'auto', folder: isPdf ? "pdf's" : 'images' },
+
         (error, result) => {
           if (error) {
             reject(error);

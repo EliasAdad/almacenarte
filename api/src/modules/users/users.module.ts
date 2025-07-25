@@ -5,7 +5,7 @@ import { UsersRepository } from './users.repository';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { User } from './entities/user.entity';
 import { cloudinaryConfig } from 'src/config/cloudinary';
-import { CloudinaryService } from 'src/commons/cloudinary.service';
+import { CloudinaryService } from '../files/cloudinary-files.service';
 
 @Module({
   imports: [TypeOrmModule.forFeature([User])],

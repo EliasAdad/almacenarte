@@ -18,7 +18,7 @@ import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { AuthGuard } from '../auth/auth.guard';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { CloudinaryService } from 'src/commons/cloudinary.service';
+import { CloudinaryService } from '../files/cloudinary-files.service';
 
 @Controller('users')
 export class UsersController {
