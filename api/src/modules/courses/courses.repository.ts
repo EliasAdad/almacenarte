@@ -66,10 +66,12 @@ export class CoursesRepository {
   ];
 
   async findAll(page: number = 1, limit: number = 5) {
-    const courses = await this.coursesRepository.find();
+    const courses = await this.coursesRepository.find({
+      relations: ['files', 'users'],
+    });
 
     if (!courses || courses.length === 0)
-      throw new NotFoundException('No se encontraron usuarios registrados.');
+      throw new NotFoundException('No se encontraron cursos.');
 
     const isAvailable = courses.filter((course) => course.cupos > 0);
 
@@ -81,10 +83,13 @@ export class CoursesRepository {
   }
 
   async findOne(id: string) {
-    const course = await this.coursesRepository.findOne({ where: { id } });
+    const course = await this.coursesRepository.findOne({
+      where: { id },
+      relations: ['files', 'users'],
+    });
 
     if (!course) {
-      throw new BadRequestException('ID inválido o usuario no existe');
+      throw new BadRequestException('ID inválido o el curso no existe');
     }
 
     return { status: HttpStatus.OK, course };
