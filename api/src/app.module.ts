@@ -5,6 +5,7 @@ import { AuthModule } from './modules/auth/auth.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import typeOrmConfig from './config/typeorm';
+import { JwtModule } from '@nestjs/jwt';
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -15,6 +16,11 @@ import typeOrmConfig from './config/typeorm';
       inject: [ConfigService],
       useFactory: (configService: ConfigService) =>
         configService.get('typeorm'),
+    }),
+    JwtModule.register({
+      global: true,
+      signOptions: { expiresIn: '1h' },
+      secret: process.env.JWT_SECRET_KEY,
     }),
     UsersModule,
     CoursesModule,

@@ -15,6 +15,10 @@ export class UsersService {
     return this.usersRepository.findOne(id);
   }
 
+  findByEmail(userEmail: string) {
+    return this.usersRepository.findByEmail(userEmail);
+  }
+
   create(user: CreateUserDto) {
     return this.usersRepository.create(user);
   }
