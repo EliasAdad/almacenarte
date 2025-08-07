@@ -98,17 +98,10 @@ export class UsersRepository {
     };
   }
 
-  async findByEmail(userEmail: string) {
-    const user = await this.usersRepository.findOne({
-      where: { email: userEmail },
+  async findByEmail(email: string) {
+    return await this.usersRepository.findOne({
+      where: { email },
     });
-
-    if (!user)
-      throw new NotFoundException(
-        'Email inválido o no registrado, intente de nuevo.',
-      );
-
-    return user;
   }
 
   async create(user: CreateUserDto) {
@@ -117,7 +110,6 @@ export class UsersRepository {
     const { password: _, ...rest } = newUser;
 
     return {
-      status: HttpStatus.CREATED,
       message: 'Usuario creado exitosamente!',
       rest,
     };

@@ -16,6 +16,6 @@ import { CloudinaryService } from '../files/cloudinary-files.service';
     cloudinaryConfig,
     CloudinaryService,
   ],
-  exports: [UsersRepository],
+  exports: [UsersService],
 })
 export class UsersModule {}
