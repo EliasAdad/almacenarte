@@ -4,10 +4,13 @@ import {
   Injectable,
   UnauthorizedException,
 } from '@nestjs/common';
+import { JwtService } from '@nestjs/jwt';
 import { Observable } from 'rxjs';
 
 @Injectable()
 export class AuthGuard implements CanActivate {
+  constructor(private readonly jwtService: JwtService) {}
+
   canActivate(
     context: ExecutionContext,
   ): boolean | Promise<boolean> | Observable<boolean> {
@@ -18,21 +21,32 @@ export class AuthGuard implements CanActivate {
       throw new UnauthorizedException('Header de autorización es requerido');
     }
 
-    const [type, credentials] = authHeader.split(' ');
+    const [type, token] = authHeader.split(' ');
 
-    if (type !== 'Basic' || !credentials) {
+    if (type !== 'Bearer') {
       throw new UnauthorizedException(
-        'Header de autorizacion inválido, se espera que sea de tipo Basic: email:password',
+        'Header de autorizacion inválido, se espera que sea de tipo Bearer',
       );
     }
 
-    const [email, password] = credentials.split(':');
-
-    if (!email || !password)
+    if (!token) {
       throw new UnauthorizedException(
-        'Header de autorización debe contener email y contraseña',
+        'No se encontró el token de autenticación o no es un token válido.',
       );
+    }
 
-    return true;
+    try {
+      const payload = this.jwtService.verify(token, {
+        secret: process.env.JWT_SECRET_KEY,
+      });
+
+      payload.roles = ['adming'];
+      payload.iat = new Date(payload.iat * 1000);
+      payload.exp = new Date(payload.exp * 1000);
+      request.user = payload;
+      return true;
+    } catch (error) {
+      throw new UnauthorizedException('Token inválido', error.message);
+    }
   }
 }
