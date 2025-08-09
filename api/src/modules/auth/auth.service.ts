@@ -1,13 +1,9 @@
-import {
-  BadRequestException,
-  HttpStatus,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import { BadRequestException, HttpStatus, Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { UsersService } from '../users/users.service';
 import * as bcrypt from 'bcrypt';
 import { CreateUserDto } from '../users/dto/create-user.dto';
+import { Role } from './enums/roles.enum';
 
 @Injectable()
 export class AuthService {
@@ -41,7 +37,10 @@ export class AuthService {
 
     const user = await this.usersService.findByEmail(email);
 
-    if (!user) throw new NotFoundException('Usuario no encontrado');
+    if (!user)
+      throw new BadRequestException(
+        'Email o contraseña inválidos, intenta de nuevo',
+      );
 
     const isValidPw = await bcrypt.compare(password, user.password);
 
@@ -53,7 +52,8 @@ export class AuthService {
 
     const payload = {
       sub: user.id,
-      email: user.id,
+      email: user.email,
+      roles: [user.isAdmin ? Role.Admin : Role.User],
     };
 
     const token = this.jwtService.sign(payload);

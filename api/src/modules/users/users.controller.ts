@@ -19,6 +19,9 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { AuthGuard } from '../auth/auth.guard';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { CloudinaryService } from '../files/cloudinary-files.service';
+import { Roles } from 'src/decorators/roles.decorator';
+import { Role } from '../auth/enums/roles.enum';
+import { RolesGuard } from 'src/guards/roles.guard';
 
 @Controller('users')
 export class UsersController {
@@ -58,6 +61,13 @@ export class UsersController {
   @Get()
   findAll(@Query('page') page: number, @Query('limit') limit: number) {
     return this.usersService.findAll(page, limit);
+  }
+
+  @Get('admin')
+  @Roles(Role.Admin)
+  @UseGuards(AuthGuard, RolesGuard)
+  getAdmin() {
+    return 'Ruta protegida.';
   }
 
   @UseGuards(AuthGuard)

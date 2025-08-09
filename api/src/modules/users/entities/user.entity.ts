@@ -31,6 +31,9 @@ export class User {
   @Column({ type: 'boolean', default: true })
   isActive: boolean;
 
+  @Column({ type: 'boolean', default: false })
+  isAdmin: boolean;
+
   @OneToMany(() => Course, (course) => course.users, { onDelete: 'CASCADE' })
   courses: Course[];
 }
