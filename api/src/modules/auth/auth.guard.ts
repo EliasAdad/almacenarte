@@ -40,7 +40,6 @@ export class AuthGuard implements CanActivate {
         secret: process.env.JWT_SECRET_KEY,
       });
 
-      payload.roles = ['adming'];
       payload.iat = new Date(payload.iat * 1000);
       payload.exp = new Date(payload.exp * 1000);
       request.user = payload;
